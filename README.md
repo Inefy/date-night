@@ -9,6 +9,8 @@ npm install
 npm run start
 ```
 
+`expo-calendar` is not available in Expo Go for SDK 56, so use a development build or preview/production build for full iOS and Android QA. `npm run start` now targets an installed development client. `npm run start:expo-go` is only useful for limited screens that do not touch native calendar behavior.
+
 ## Environment
 
 Create a local `.env` from `.env.example` and set:
@@ -40,21 +42,26 @@ Build profiles are defined in `eas.json`:
 npx eas-cli login
 npx eas-cli init
 npx eas-cli build --profile development --platform ios
+npx eas-cli build --profile development --platform android
 npx eas-cli build --profile preview --platform all
 npx eas-cli build --profile production --platform all
 ```
 
-Use `preview` for internal installable testing builds. The `development` profile is configured for an iOS simulator build and Android APK without bundling secrets in source control.
+Use `preview` for internal installable testing builds. The `development` profile is configured as an Expo development client, with an iOS simulator build and Android APK, so native modules can be tested outside Expo Go without bundling secrets in source control.
 
 ## Useful Commands
 
 ```bash
 npm run android
 npm run ios
+npm run start
+npm run start:expo-go
 npm run web
 npm test
 npm run typecheck
 ```
+
+`npm run android` and `npm run ios` create local native builds. iOS local builds require macOS and Xcode; use EAS Build from Windows.
 
 ## QA and Launch Notes
 

@@ -8,6 +8,7 @@ node_modules/
 .expo-server*.log
 dist/
 web-build/
+.expo-export*/
 expo-env.d.ts
 
 # Native
