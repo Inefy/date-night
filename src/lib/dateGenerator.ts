@@ -90,6 +90,23 @@ type ScoredTemplate = {
   template: DateTemplate;
 };
 
+type GenerationContext = {
+  desiredEnergy?: EnergyLevel;
+  desiredVibes: readonly DateVibe[];
+  dietaryRequirements: readonly DietaryFlexibility[];
+  foodModes: readonly FoodMode[];
+  locationModes: readonly LocationMode[];
+  needsIndoor: boolean;
+  previousTemplate?: DateTemplate;
+  previousTemplateId?: EntityId;
+  recentTemplateIds: ReadonlySet<EntityId>;
+  requestedWeatherModes: readonly WeatherMode[];
+  seenTemplateIds: ReadonlySet<EntityId>;
+  targetBudget?: BudgetLevel;
+  wantsLowEnergy: boolean;
+  wantsNoTalking: boolean;
+};
+
 const budgetLabels: Record<BudgetLevel, string> = {
   free: 'Free',
   low: 'Low cost',
@@ -143,9 +160,11 @@ export function generateDatePlan(
 
   const remixReasons = options.remix?.reasons ?? [];
   const previousTemplateId = options.remix?.previousTemplateId;
-  const adjustedFilters = applyRemixFilterDefaults(filters, templates, previousTemplateId, remixReasons);
+  const previousTemplate = templates.find((template) => template.id === previousTemplateId);
+  const adjustedFilters = applyRemixFilterDefaults(filters, previousTemplate, remixReasons);
+  const context = createGenerationContext(adjustedFilters, options, remixReasons, previousTemplate);
   const random = options.random ?? Math.random;
-  const candidates = getFallbackCandidates(adjustedFilters, templates, options, remixReasons);
+  const candidates = getFallbackCandidates(adjustedFilters, templates, context);
 
   if (candidates.length === 0) {
     throw new Error('No date templates match dietary safety requirements.');
@@ -154,7 +173,7 @@ export function generateDatePlan(
   const scored = candidates
     .map((template) => ({
       template,
-      score: scoreTemplate(template, adjustedFilters, options, remixReasons, templates),
+      score: scoreTemplate(template, adjustedFilters, remixReasons, context),
     }))
     .sort((a, b) => b.score - a.score);
 
@@ -168,12 +187,10 @@ export function generateDatePlan(
 
 function applyRemixFilterDefaults(
   filters: DateGenerationFilters,
-  templates: readonly DateTemplate[],
-  previousTemplateId: EntityId | undefined,
+  previousTemplate: DateTemplate | undefined,
   reasons: readonly RemixReason[],
 ): DateGenerationFilters {
   const nextFilters = { ...filters };
-  const previousTemplate = templates.find((template) => template.id === previousTemplateId);
 
   if (reasons.includes('too_expensive') && !nextFilters.maxBudget && previousTemplate) {
     nextFilters.maxBudget = lowerBudget(previousTemplate.budget);
@@ -206,14 +223,44 @@ function applyRemixFilterDefaults(
   return nextFilters;
 }
 
+function createGenerationContext(
+  filters: DateGenerationFilters,
+  options: DateGenerationOptions,
+  remixReasons: readonly RemixReason[],
+  previousTemplate: DateTemplate | undefined,
+): GenerationContext {
+  const requestedWeatherModes = toArray(filters.weatherMode);
+  const requestedTalkingLevels = toArray(filters.talkingLevel);
+
+  return {
+    desiredEnergy: getDesiredEnergy(filters),
+    desiredVibes: filters.vibeTags ?? [],
+    dietaryRequirements: getDietaryRequirements(filters),
+    foodModes: toArray(filters.foodMode),
+    locationModes: toArray(filters.locationMode),
+    needsIndoor:
+      Boolean(filters.rainyDay || filters.indoorOnly || remixReasons.includes('bad_weather')) ||
+      requestedWeatherModes.includes('indoor'),
+    previousTemplate,
+    previousTemplateId: options.remix?.previousTemplateId,
+    recentTemplateIds: new Set(options.recentlyUsedTemplateIds ?? []),
+    requestedWeatherModes,
+    seenTemplateIds: new Set(options.seenTemplateIds ?? []),
+    targetBudget: filters.targetBudget ?? filters.maxBudget,
+    wantsLowEnergy: wantsLowEnergy(filters),
+    wantsNoTalking:
+      Boolean(filters.noTalking || filters.vibeTags?.includes('no_talking')) ||
+      requestedTalkingLevels.includes('quiet'),
+  };
+}
+
 function getFallbackCandidates(
   filters: DateGenerationFilters,
   templates: readonly DateTemplate[],
-  options: DateGenerationOptions,
-  remixReasons: readonly RemixReason[],
+  context: GenerationContext,
 ): DateTemplate[] {
   for (const stage of fallbackStages) {
-    const candidates = templates.filter((template) => passesHardFilters(template, filters, options, remixReasons, stage));
+    const candidates = templates.filter((template) => passesHardFilters(template, filters, context, stage));
 
     if (candidates.length > 0) {
       return candidates;
@@ -226,15 +273,14 @@ function getFallbackCandidates(
 function passesHardFilters(
   template: DateTemplate,
   filters: DateGenerationFilters,
-  options: DateGenerationOptions,
-  remixReasons: readonly RemixReason[],
+  context: GenerationContext,
   relaxation: HardRelaxation,
 ): boolean {
-  if (template.id === options.remix?.previousTemplateId) {
+  if (template.id === context.previousTemplateId) {
     return false;
   }
 
-  if (!matchesDietarySafety(template, getDietaryRequirements(filters))) {
+  if (!matchesDietarySafety(template, context.dietaryRequirements)) {
     return false;
   }
 
@@ -246,20 +292,19 @@ function passesHardFilters(
     return false;
   }
 
-  const locationModes = toArray(filters.locationMode);
-  if (!relaxation.relaxLocation && locationModes.length > 0 && !hasOverlap(template.locationModes, locationModes)) {
+  if (!relaxation.relaxLocation && context.locationModes.length > 0 && !hasOverlap(template.locationModes, context.locationModes)) {
     return false;
   }
 
-  if (!relaxation.relaxWeather && !matchesWeatherMode(template, filters, remixReasons)) {
+  if (!relaxation.relaxWeather && !matchesWeatherMode(template, context)) {
     return false;
   }
 
-  if (!relaxation.relaxEnergy && wantsLowEnergy(filters) && !matchesLowEnergy(template)) {
+  if (!relaxation.relaxEnergy && context.wantsLowEnergy && !matchesLowEnergy(template)) {
     return false;
   }
 
-  if (!relaxation.relaxTalking && wantsNoTalking(filters) && !matchesNoTalking(template)) {
+  if (!relaxation.relaxTalking && context.wantsNoTalking && !matchesNoTalking(template)) {
     return false;
   }
 
@@ -273,28 +318,24 @@ function passesHardFilters(
 function scoreTemplate(
   template: DateTemplate,
   filters: DateGenerationFilters,
-  options: DateGenerationOptions,
   remixReasons: readonly RemixReason[],
-  templates: readonly DateTemplate[],
+  context: GenerationContext,
 ): number {
   let score = 0;
-  const desiredVibes = filters.vibeTags ?? [];
-  const vibeOverlap = countOverlap(template.vibeTags, desiredVibes);
+  const vibeOverlap = countOverlap(template.vibeTags, context.desiredVibes);
 
-  if (desiredVibes.length > 0) {
+  if (context.desiredVibes.length > 0) {
     score += vibeOverlap * 12;
-    score += (vibeOverlap / desiredVibes.length) * 8;
+    score += (vibeOverlap / context.desiredVibes.length) * 8;
     score -= vibeOverlap === 0 ? 4 : 0;
   }
 
-  const desiredEnergy = getDesiredEnergy(filters);
-  if (desiredEnergy) {
-    score += (2 - Math.min(2, rankDistance(template.energy, desiredEnergy, energyLevels))) * 5;
+  if (context.desiredEnergy) {
+    score += (2 - Math.min(2, rankDistance(template.energy, context.desiredEnergy, energyLevels))) * 5;
   }
 
-  const targetBudget = filters.targetBudget ?? filters.maxBudget;
-  if (targetBudget) {
-    const budgetDistance = rankDistance(template.budget, targetBudget, budgetLevels);
+  if (context.targetBudget) {
+    const budgetDistance = rankDistance(template.budget, context.targetBudget, budgetLevels);
     score += Math.max(0, 7 - budgetDistance * 2);
   }
 
@@ -307,11 +348,11 @@ function scoreTemplate(
     score += rangesOverlap(template.durationRangeMinutes, filters.durationRangeMinutes) ? 6 : -3;
   }
 
-  if (filters.foodMode && hasOverlap(template.foodModes, toArray(filters.foodMode))) {
+  if (context.foodModes.length > 0 && hasOverlap(template.foodModes, context.foodModes)) {
     score += 3;
   }
 
-  if (filters.locationMode && hasOverlap(template.locationModes, toArray(filters.locationMode))) {
+  if (context.locationModes.length > 0 && hasOverlap(template.locationModes, context.locationModes)) {
     score += 4;
   }
 
@@ -319,23 +360,23 @@ function scoreTemplate(
     score += 4;
   }
 
-  if (wantsNoTalking(filters) && template.talkingLevel === 'quiet') {
+  if (context.wantsNoTalking && template.talkingLevel === 'quiet') {
     score += 6;
   }
 
-  if (options.seenTemplateIds?.includes(template.id)) {
+  if (context.seenTemplateIds.has(template.id)) {
     score -= 4;
   } else {
     score += 3;
   }
 
-  if (options.recentlyUsedTemplateIds?.includes(template.id)) {
+  if (context.recentTemplateIds.has(template.id)) {
     score -= 14;
   } else {
     score += 6;
   }
 
-  score += scoreRemix(template, filters, remixReasons, templates, options.remix?.previousTemplateId);
+  score += scoreRemix(template, filters, remixReasons, context);
 
   return score;
 }
@@ -344,11 +385,9 @@ function scoreRemix(
   template: DateTemplate,
   filters: DateGenerationFilters,
   reasons: readonly RemixReason[],
-  templates: readonly DateTemplate[],
-  previousTemplateId: EntityId | undefined,
+  context: GenerationContext,
 ): number {
   let score = 0;
-  const previousTemplate = templates.find((candidate) => candidate.id === previousTemplateId);
 
   if (reasons.includes('too_expensive')) {
     score += compareRank(template.budget, filters.maxBudget ?? 'moderate', budgetLevels) <= 0 ? 5 : -8;
@@ -378,13 +417,13 @@ function scoreRemix(
     score += template.weatherModes.includes('indoor') || template.weatherModes.includes('weather_flexible') ? 7 : -10;
   }
 
-  if (reasons.includes('not_our_vibe') && previousTemplate) {
-    score -= countOverlap(template.vibeTags, previousTemplate.vibeTags) * 3;
+  if (reasons.includes('not_our_vibe') && context.previousTemplate) {
+    score -= countOverlap(template.vibeTags, context.previousTemplate.vibeTags) * 3;
   }
 
-  if (reasons.includes('surprise_me_again') && previousTemplate) {
-    score += template.id === previousTemplateId ? -20 : 3;
-    score -= countOverlap(template.vibeTags, previousTemplate.vibeTags) * 2;
+  if (reasons.includes('surprise_me_again') && context.previousTemplate) {
+    score += template.id === context.previousTemplateId ? -20 : 3;
+    score -= countOverlap(template.vibeTags, context.previousTemplate.vibeTags) * 2;
   }
 
   return score;
@@ -431,17 +470,13 @@ function matchesDietarySafety(template: DateTemplate, requirements: readonly Die
 
 function matchesWeatherMode(
   template: DateTemplate,
-  filters: DateGenerationFilters,
-  remixReasons: readonly RemixReason[],
+  context: GenerationContext,
 ): boolean {
-  const requestedWeather = toArray(filters.weatherMode);
-  const needsIndoor = filters.rainyDay || filters.indoorOnly || remixReasons.includes('bad_weather') || requestedWeather.includes('indoor');
-
-  if (needsIndoor) {
+  if (context.needsIndoor) {
     return template.weatherModes.includes('indoor') || template.weatherModes.includes('weather_flexible');
   }
 
-  if (requestedWeather.includes('outdoor')) {
+  if (context.requestedWeatherModes.includes('outdoor')) {
     return template.weatherModes.includes('outdoor') || template.weatherModes.includes('weather_flexible');
   }
 

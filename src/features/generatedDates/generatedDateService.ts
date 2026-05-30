@@ -38,6 +38,13 @@ type GeneratedDateRow = {
   vibe_tags: GeneratedDatePlan['vibeTags'];
 };
 
+type RecentGeneratedTemplateRow = {
+  filters?: Record<string, unknown> | null;
+  seed: string;
+  source_template_id?: string | null;
+  source_template_key?: string | null;
+};
+
 type CreateGeneratedDateInput = {
   coupleId?: string;
   filters: DateGenerationFilters;
@@ -132,6 +139,10 @@ function normalizeSteps(value: unknown): DateStep[] {
 }
 
 function getSourceTemplateId(row: GeneratedDateRow) {
+  return getRecentSourceTemplateId(row);
+}
+
+function getRecentSourceTemplateId(row: RecentGeneratedTemplateRow) {
   const filters = row.filters ?? {};
   const filterTemplateId = filters.sourceTemplateId;
 
@@ -276,6 +287,30 @@ export async function listRecentGeneratedDates({
   }
 
   return ((data ?? []) as unknown as GeneratedDateRow[]).map(rowToGeneratedDate);
+}
+
+export async function listRecentGeneratedTemplateIds({
+  coupleId,
+  limit = 10,
+}: ListRecentGeneratedDatesOptions = {}): Promise<string[]> {
+  const client = requireSupabaseClient();
+  let query = client
+    .from('generated_dates')
+    .select('filters, seed, source_template_id, source_template_key')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (coupleId) {
+    query = query.eq('couple_id', coupleId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(toFriendlyGeneratedDateError(error));
+  }
+
+  return ((data ?? []) as unknown as RecentGeneratedTemplateRow[]).map(getRecentSourceTemplateId);
 }
 
 export async function listGeneratedDatesByIds(ids: string[]): Promise<PersistedGeneratedDate[]> {

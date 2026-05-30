@@ -12,7 +12,7 @@ import { isSupabaseConfigured, useAuth } from '@/features/auth/AuthProvider';
 import { getActiveCoupleProfile } from '@/features/couple/coupleService';
 import {
   createGeneratedDate,
-  listRecentGeneratedDates,
+  listRecentGeneratedTemplateIds,
 } from '@/features/generatedDates/generatedDateService';
 import {
   getLocalPreferences,
@@ -203,11 +203,10 @@ export function HomeGeneratorScreen() {
 
       const remoteRecentTemplateIds =
         user && resolvedCoupleId && isSupabaseConfigured && !isOffline
-          ? await listRecentGeneratedDates({
+          ? await listRecentGeneratedTemplateIds({
               coupleId: resolvedCoupleId,
               limit: 5,
             })
-              .then((recentDates) => recentDates.map((generatedDate) => generatedDate.plan.sourceTemplateId))
               .catch(() => [])
           : [];
       const plan = generateDatePlan(generationFilters, dateTemplates, {
