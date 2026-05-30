@@ -87,4 +87,4 @@ Couple data is private to the couple profile. Saved dates, mystery cards, feedba
 
 Analytics should stay minimal and practical: track non-sensitive product events like date generated, date saved, or mystery revealed. Do not store personal messages, private prompts, exact plans, exact location, or sensitive relationship details in analytics properties.
 
-The Supabase anon key is acceptable in the client only when Row Level Security is enforced. Service role keys and privileged secrets must never be included in the app bundle, documentation examples, screenshots, or build profiles.
+The Supabase publishable key is acceptable in the client only when Row Level Security is enforced. Service role keys, secret keys, and other privileged secrets must never be included in the app bundle, documentation examples, screenshots, or build profiles.

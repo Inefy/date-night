@@ -5,7 +5,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const supabasePublishableKey =
+  process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 export type SupabaseConnectionTestResult = {
   message: string;
@@ -13,13 +15,13 @@ export type SupabaseConnectionTestResult = {
   skipped?: boolean;
 };
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
 
-// The anon key is intentionally public in Expo client apps. It is safe only when
-// Supabase Row Level Security policies enforce what each user can read/write.
+// The publishable key is intentionally public in Expo client apps. It is safe
+// only when Supabase Row Level Security policies enforce what each user can read/write.
 // Never put a service role key or other privileged secret in this app bundle.
 export const supabase: SupabaseClient | null = isSupabaseConfigured
-  ? createClient(supabaseUrl as string, supabaseAnonKey as string, {
+  ? createClient(supabaseUrl as string, supabasePublishableKey as string, {
       auth: {
         autoRefreshToken: true,
         detectSessionInUrl: false,
@@ -32,7 +34,7 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
 export function requireSupabaseClient(): SupabaseClient {
   if (!supabase) {
     throw new Error(
-      'Supabase is not configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.',
+      'Supabase is not configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY.',
     );
   }
 
@@ -48,7 +50,7 @@ export async function testSupabaseConnection(): Promise<SupabaseConnectionTestRe
     };
   }
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !supabasePublishableKey) {
     return {
       message: 'Supabase environment variables are not set.',
       ok: false,
@@ -59,7 +61,7 @@ export async function testSupabaseConnection(): Promise<SupabaseConnectionTestRe
   try {
     const response = await fetch(`${supabaseUrl}/auth/v1/settings`, {
       headers: {
-        apikey: supabaseAnonKey,
+        apikey: supabasePublishableKey,
       },
     });
 

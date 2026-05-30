@@ -4,6 +4,7 @@ import {
   createGeneratedDate,
   getGeneratedDateById,
   isPersistedGeneratedDateId,
+  listGeneratedDatesByIds,
 } from '@/features/generatedDates/generatedDateService';
 import { requireSupabaseClient } from '@/lib/supabase';
 import { saveGeneratedDatePlan } from '@/lib/generatedDateStore';
@@ -217,21 +218,23 @@ export async function listFavorites({
   }
 
   const rows = (data ?? []) as FavoriteDateRow[];
-  const favorites = await Promise.all(
-    rows.map(async (row) => {
-      if (!row.generated_date_id) {
-        return undefined;
-      }
-
-      try {
-        const persistedDate = await getGeneratedDateById(row.generated_date_id);
-
-        return persistedDate ? mapFavoriteRow(row, persistedDate.plan) : undefined;
-      } catch {
-        return undefined;
-      }
-    }),
+  const persistedDates = await listGeneratedDatesByIds(
+    rows
+      .map((row) => row.generated_date_id)
+      .filter((generatedDateId): generatedDateId is string => Boolean(generatedDateId)),
   );
+  const persistedDateById = new Map(
+    persistedDates.map((persistedDate) => [persistedDate.id, persistedDate]),
+  );
+  const favorites = rows.map((row) => {
+    if (!row.generated_date_id) {
+      return undefined;
+    }
+
+    const persistedDate = persistedDateById.get(row.generated_date_id);
+
+    return persistedDate ? mapFavoriteRow(row, persistedDate.plan) : undefined;
+  });
 
   return favorites.filter((favorite): favorite is FavoriteDateItem => Boolean(favorite));
 }

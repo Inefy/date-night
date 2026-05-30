@@ -164,11 +164,16 @@ async function trackAnalyticsEventAsync({
   }
 
   const hasUserId = isUuid(userId);
-  await supabase.from('analytics_events').insert({
-    couple_id: hasUserId && isUuid(coupleId) ? coupleId : null,
-    event_name: eventName,
-    event_properties: sanitizeProperties(properties),
-    generated_date_id: hasUserId && isUuid(generatedDateId) ? generatedDateId : null,
-    user_id: hasUserId ? userId : null,
-  });
+
+  try {
+    await supabase.from('analytics_events').insert({
+      couple_id: hasUserId && isUuid(coupleId) ? coupleId : null,
+      event_name: eventName,
+      event_properties: sanitizeProperties(properties),
+      generated_date_id: hasUserId && isUuid(generatedDateId) ? generatedDateId : null,
+      user_id: hasUserId ? userId : null,
+    });
+  } catch {
+    // Analytics should never interrupt the user-facing flow.
+  }
 }

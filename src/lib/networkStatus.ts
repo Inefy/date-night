@@ -1,14 +1,17 @@
 // src/lib/networkStatus.ts
 import { useEffect, useState } from 'react';
+import NetInfo, { type NetInfoState } from '@react-native-community/netinfo';
 
-type NavigatorWithOnline = Navigator & {
-  onLine?: boolean;
-};
+function isOnlineFromState(state: NetInfoState) {
+  if (state.isConnected === false) {
+    return false;
+  }
 
-function readOnlineStatus() {
-  const navigatorWithOnline = globalThis.navigator as NavigatorWithOnline | undefined;
+  if (state.isInternetReachable === false) {
+    return false;
+  }
 
-  return typeof navigatorWithOnline?.onLine === 'boolean' ? navigatorWithOnline.onLine : true;
+  return true;
 }
 
 export function getOfflineMessage(action: 'join' | 'reveal' | 'save' | 'share' | 'sync') {
@@ -23,29 +26,27 @@ export function getOfflineMessage(action: 'join' | 'reveal' | 'save' | 'share' |
   return messages[action];
 }
 
-export function isProbablyOnline() {
-  return readOnlineStatus();
+export async function isProbablyOnline() {
+  try {
+    return isOnlineFromState(await NetInfo.fetch());
+  } catch {
+    return true;
+  }
 }
 
 export function useNetworkStatus() {
-  const [isOnline, setIsOnline] = useState(readOnlineStatus);
+  const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
-    function updateOnlineStatus() {
-      setIsOnline(readOnlineStatus());
-    }
+    void NetInfo.fetch()
+      .then((state) => setIsOnline(isOnlineFromState(state)))
+      .catch(() => setIsOnline(true));
 
-    if (typeof globalThis.addEventListener !== 'function') {
-      return undefined;
-    }
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsOnline(isOnlineFromState(state));
+    });
 
-    globalThis.addEventListener('online', updateOnlineStatus);
-    globalThis.addEventListener('offline', updateOnlineStatus);
-
-    return () => {
-      globalThis.removeEventListener('online', updateOnlineStatus);
-      globalThis.removeEventListener('offline', updateOnlineStatus);
-    };
+    return unsubscribe;
   }, []);
 
   return {

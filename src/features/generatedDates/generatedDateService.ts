@@ -50,6 +50,33 @@ type ListRecentGeneratedDatesOptions = {
   limit?: number;
 };
 
+const GENERATED_DATE_SELECT = [
+  'backup_plan',
+  'calendar_description',
+  'calendar_title',
+  'conversation_prompt',
+  'couple_id',
+  'created_at',
+  'energy',
+  'estimated_budget_label',
+  'estimated_duration_minutes',
+  'filters',
+  'food_plan',
+  'id',
+  'location_mode',
+  'premise',
+  'prep_items',
+  'seed',
+  'share_teaser',
+  'source_template_id',
+  'source_template_key',
+  'steps',
+  'title',
+  'twist',
+  'user_id',
+  'vibe_tags',
+].join(', ');
+
 function toFriendlyGeneratedDateError(error: unknown): string {
   const rawMessage =
     error instanceof Error ? error.message : typeof error === 'string' ? error : '';
@@ -196,34 +223,7 @@ export async function createGeneratedDate(
   const { data, error } = await client
     .from('generated_dates')
     .insert(planToInsert(input))
-    .select(
-      [
-        'backup_plan',
-        'calendar_description',
-        'calendar_title',
-        'conversation_prompt',
-        'couple_id',
-        'created_at',
-        'energy',
-        'estimated_budget_label',
-        'estimated_duration_minutes',
-        'filters',
-        'food_plan',
-        'id',
-        'location_mode',
-        'premise',
-        'prep_items',
-        'seed',
-        'share_teaser',
-        'source_template_id',
-        'source_template_key',
-        'steps',
-        'title',
-        'twist',
-        'user_id',
-        'vibe_tags',
-      ].join(', '),
-    )
+    .select(GENERATED_DATE_SELECT)
     .single<GeneratedDateRow>();
 
   if (error) {
@@ -243,34 +243,7 @@ export async function getGeneratedDateById(
   const client = requireSupabaseClient();
   const { data, error } = await client
     .from('generated_dates')
-    .select(
-      [
-        'backup_plan',
-        'calendar_description',
-        'calendar_title',
-        'conversation_prompt',
-        'couple_id',
-        'created_at',
-        'energy',
-        'estimated_budget_label',
-        'estimated_duration_minutes',
-        'filters',
-        'food_plan',
-        'id',
-        'location_mode',
-        'premise',
-        'prep_items',
-        'seed',
-        'share_teaser',
-        'source_template_id',
-        'source_template_key',
-        'steps',
-        'title',
-        'twist',
-        'user_id',
-        'vibe_tags',
-      ].join(', '),
-    )
+    .select(GENERATED_DATE_SELECT)
     .eq('id', id)
     .maybeSingle<GeneratedDateRow>();
 
@@ -288,34 +261,7 @@ export async function listRecentGeneratedDates({
   const client = requireSupabaseClient();
   let query = client
     .from('generated_dates')
-    .select(
-      [
-        'backup_plan',
-        'calendar_description',
-        'calendar_title',
-        'conversation_prompt',
-        'couple_id',
-        'created_at',
-        'energy',
-        'estimated_budget_label',
-        'estimated_duration_minutes',
-        'filters',
-        'food_plan',
-        'id',
-        'location_mode',
-        'premise',
-        'prep_items',
-        'seed',
-        'share_teaser',
-        'source_template_id',
-        'source_template_key',
-        'steps',
-        'title',
-        'twist',
-        'user_id',
-        'vibe_tags',
-      ].join(', '),
-    )
+    .select(GENERATED_DATE_SELECT)
     .order('created_at', { ascending: false })
     .limit(limit);
 
@@ -324,6 +270,26 @@ export async function listRecentGeneratedDates({
   }
 
   const { data, error } = await query;
+
+  if (error) {
+    throw new Error(toFriendlyGeneratedDateError(error));
+  }
+
+  return ((data ?? []) as unknown as GeneratedDateRow[]).map(rowToGeneratedDate);
+}
+
+export async function listGeneratedDatesByIds(ids: string[]): Promise<PersistedGeneratedDate[]> {
+  const validIds = Array.from(new Set(ids.filter(isPersistedGeneratedDateId)));
+
+  if (validIds.length === 0) {
+    return [];
+  }
+
+  const client = requireSupabaseClient();
+  const { data, error } = await client
+    .from('generated_dates')
+    .select(GENERATED_DATE_SELECT)
+    .in('id', validIds);
 
   if (error) {
     throw new Error(toFriendlyGeneratedDateError(error));

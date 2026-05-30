@@ -6,11 +6,6 @@
     "scheme": "datenightdeck",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFF7ED"
-    },
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.inefy.datenightdeck",
@@ -58,6 +53,14 @@
         {
           "calendarPermission": "Date Night Deck needs calendar access to add your planned date.",
           "remindersPermission": false
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFF7ED",
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain"
         }
       ]
     ]

@@ -52,7 +52,7 @@ export default function SignInScreen() {
     setSubmitting(true);
 
     try {
-      await signIn(normalizedEmail);
+      await signIn(normalizedEmail, { returnTo: nextRoute });
       setSuccessMessage('Check your email for a secure sign-in link.');
     } catch (error) {
       setErrorMessage(toFriendlyAuthError(error));
@@ -73,7 +73,7 @@ export default function SignInScreen() {
     <Screen scroll title="Sign in" subtitle="Use email-based auth to save and share dates.">
       {!isSupabaseConfigured ? (
         <ErrorState
-          message="Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to your environment before signing in."
+          message="Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY to your environment before signing in."
           title="Auth is not connected"
         />
       ) : null}

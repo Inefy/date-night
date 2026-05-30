@@ -420,7 +420,7 @@ export function LockedMysteryCardScreen() {
         ? {
             ...currentAccess,
             mysteryDate: revealedMysteryDate,
-            status: currentAccess.status === 'locked' ? 'locked' : 'revealed',
+            status: 'revealed',
           }
         : currentAccess,
     );

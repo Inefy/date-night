@@ -15,10 +15,10 @@ Create a local `.env` from `.env.example` and set:
 
 ```bash
 EXPO_PUBLIC_SUPABASE_URL=your-project-url
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your-public-anon-key
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-public-publishable-key
 ```
 
-The Supabase anon key is allowed in client apps only when Row Level Security is enforced. Never add a service role key to the app.
+The Supabase publishable key is allowed in client apps only when Row Level Security is enforced. Legacy anon keys are still supported as a fallback during migration. Never add a service role or secret key to the app.
 
 For EAS builds, create the same variables in the matching EAS environment (`development`, `preview`, or `production`). Do not commit real `.env` files, service role keys, signing keys, or store credentials.
 

@@ -5,7 +5,7 @@ export function toFriendlyAuthError(error: unknown): string {
   const message = rawMessage.toLowerCase();
 
   if (message.includes('supabase is not configured')) {
-    return 'Sign in is not connected yet. Add your Supabase URL and anon key to the local environment.';
+    return 'Sign in is not connected yet. Add your Supabase URL and publishable key to the local environment.';
   }
 
   if (message.includes('invalid login credentials')) {

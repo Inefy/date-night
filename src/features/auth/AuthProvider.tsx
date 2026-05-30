@@ -11,16 +11,20 @@ import { toFriendlyAuthError } from './authErrors';
 type AuthContextValue = {
   authError?: string;
   loading: boolean;
-  magicLinkSignIn: (email: string) => Promise<void>;
+  magicLinkSignIn: (email: string, options?: SignInOptions) => Promise<void>;
   profileError?: string;
   session: Session | null;
-  signIn: (email: string) => Promise<void>;
+  signIn: (email: string, options?: SignInOptions) => Promise<void>;
   signOut: () => Promise<void>;
   user: User | null;
 };
 
 type AuthProviderProps = {
   children: ReactNode;
+};
+
+type SignInOptions = {
+  returnTo?: string;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -43,6 +47,26 @@ function getDisplayName(user: User) {
   const emailName = user.email?.split('@')[0]?.replace(/[._-]+/g, ' ').trim();
 
   return emailName && emailName.length > 0 ? emailName : 'Date Night Partner';
+}
+
+function getUrlParams(url: string) {
+  const parsedUrl = new URL(url);
+  const params = new URLSearchParams(parsedUrl.search);
+  const hashParams = new URLSearchParams(parsedUrl.hash.replace(/^#/, ''));
+
+  hashParams.forEach((value, key) => {
+    if (!params.has(key)) {
+      params.set(key, value);
+    }
+  });
+
+  return params;
+}
+
+function getAuthRedirectTo(returnTo?: string) {
+  return returnTo
+    ? Linking.createURL('/sign-in', { queryParams: { returnTo } })
+    : Linking.createURL('/sign-in');
 }
 
 async function ensureUserProfile(user: User) {
@@ -81,6 +105,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     let isMounted = true;
+    const handledAuthUrls = new Set<string>();
 
     async function settleSession(nextSession: Session | null) {
       if (!isMounted) {
@@ -103,6 +128,59 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
 
+    async function handleAuthRedirectUrl(url: string) {
+      if (!supabase || handledAuthUrls.has(url)) {
+        return false;
+      }
+
+      let params: URLSearchParams;
+
+      try {
+        params = getUrlParams(url);
+      } catch {
+        return false;
+      }
+
+      const errorCode = params.get('error_code') ?? params.get('error');
+
+      if (errorCode) {
+        throw new Error(params.get('error_description') ?? errorCode);
+      }
+
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      const code = params.get('code');
+
+      if (accessToken && refreshToken) {
+        handledAuthUrls.add(url);
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        await settleSession(data.session);
+        return true;
+      }
+
+      if (code) {
+        handledAuthUrls.add(url);
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (error) {
+          throw error;
+        }
+
+        await settleSession(data.session);
+        return true;
+      }
+
+      return false;
+    }
+
     async function initializeSession() {
       if (!supabase) {
         if (isMounted) {
@@ -112,6 +190,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       setLoading(true);
+
+      try {
+        const initialUrl = await Linking.getInitialURL();
+
+        if (initialUrl) {
+          await handleAuthRedirectUrl(initialUrl);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setAuthError(toFriendlyAuthError(error));
+        }
+      }
 
       const { data, error } = await supabase.auth.getSession();
 
@@ -135,21 +225,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
     }).data.subscription;
 
+    const linkSubscription = Linking.addEventListener('url', ({ url }) => {
+      setLoading(true);
+      void handleAuthRedirectUrl(url)
+        .catch((error) => {
+          if (isMounted) {
+            setAuthError(toFriendlyAuthError(error));
+          }
+        })
+        .finally(() => {
+          if (isMounted) {
+            setLoading(false);
+          }
+        });
+    });
+
     void initializeSession();
 
     return () => {
       isMounted = false;
       authSubscription?.unsubscribe();
+      linkSubscription.remove();
     };
   }, []);
 
-  async function magicLinkSignIn(email: string) {
+  async function magicLinkSignIn(email: string, options: SignInOptions = {}) {
     const client = requireSupabaseClient();
     const normalizedEmail = email.trim().toLowerCase();
     const { error } = await client.auth.signInWithOtp({
       email: normalizedEmail,
       options: {
-        emailRedirectTo: Linking.createURL('/'),
+        emailRedirectTo: getAuthRedirectTo(options.returnTo),
       },
     });
 

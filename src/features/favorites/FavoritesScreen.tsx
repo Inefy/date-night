@@ -46,7 +46,15 @@ export function FavoritesScreen() {
   const [removingId, setRemovingId] = useState<string | undefined>();
 
   const loadFavorites = useCallback(async () => {
-    if (authLoading || !user) {
+    if (authLoading) {
+      return;
+    }
+
+    if (!user) {
+      setActionMessage(undefined);
+      setErrorMessage(undefined);
+      setFavorites([]);
+      setIsLoading(false);
       return;
     }
 
@@ -82,7 +90,17 @@ export function FavoritesScreen() {
       let isActive = true;
 
       async function loadOnFocus() {
-        if (authLoading || !user) {
+        if (authLoading) {
+          return;
+        }
+
+        if (!user) {
+          if (isActive) {
+            setActionMessage(undefined);
+            setErrorMessage(undefined);
+            setFavorites([]);
+            setIsLoading(false);
+          }
           return;
         }
 
@@ -206,10 +224,21 @@ export function FavoritesScreen() {
     return (
       <Screen scroll title="Favorites">
         <EmptyState
-          actionLabel="Draw a date"
-          message="Saved dates will show up here after you tap Save on a revealed card."
-          onAction={() => router.push('/tabs/home')}
-          title="No favorites yet"
+          actionLabel={user ? 'Draw a date' : 'Sign in'}
+          message={
+            user
+              ? 'Saved dates will show up here after you tap Save on a revealed card.'
+              : 'Favorites sync to your account. Sign in when you want saved dates across devices.'
+          }
+          onAction={() =>
+            user
+              ? router.push('/tabs/home')
+              : router.push({
+                  pathname: '/sign-in',
+                  params: { returnTo: '/tabs/favorites' },
+                })
+          }
+          title={user ? 'No favorites yet' : 'Sign in to view favorites'}
         />
       </Screen>
     );
