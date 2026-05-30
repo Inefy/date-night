@@ -99,17 +99,19 @@ function FieldSection({
 }
 
 function SingleSelect<T extends OptionValue>({
+  accessibilityGroup,
   onChange,
   options,
   value,
 }: {
+  accessibilityGroup: string;
   onChange: (value: T) => void;
   options: Array<PreferenceOption<T>>;
   value: T;
 }) {
   return options.map((option) => (
     <Pressable
-      accessibilityLabel={option.label}
+      accessibilityLabel={`${accessibilityGroup}: ${option.label}`}
       accessibilityRole="button"
       accessibilityState={{ selected: value === option.value }}
       key={String(option.value)}
@@ -128,10 +130,12 @@ function SingleSelect<T extends OptionValue>({
 }
 
 function MultiSelect<T extends OptionValue>({
+  accessibilityGroup,
   onChange,
   options,
   value,
 }: {
+  accessibilityGroup: string;
   onChange: (value: T[]) => void;
   options: Array<PreferenceOption<T>>;
   value: T[];
@@ -141,7 +145,7 @@ function MultiSelect<T extends OptionValue>({
 
     return (
       <Pressable
-        accessibilityLabel={option.label}
+        accessibilityLabel={`${accessibilityGroup}: ${option.label}`}
         accessibilityRole="button"
         accessibilityState={{ selected }}
         key={String(option.value)}
@@ -283,7 +287,12 @@ export function PreferencesScreen() {
         name="defaultBudget"
         render={({ field }) => (
           <FieldSection title="Default budget" description="Choose the ceiling that feels comfortable most nights.">
-            <SingleSelect onChange={field.onChange} options={budgetOptions} value={field.value} />
+            <SingleSelect
+              accessibilityGroup="Default budget"
+              onChange={field.onChange}
+              options={budgetOptions}
+              value={field.value}
+            />
           </FieldSection>
         )}
       />
@@ -297,7 +306,12 @@ export function PreferencesScreen() {
             title="Default duration"
             description="This keeps the first draw realistic before filters get involved."
           >
-            <SingleSelect onChange={field.onChange} options={durationOptions} value={field.value} />
+            <SingleSelect
+              accessibilityGroup="Default duration"
+              onChange={field.onChange}
+              options={durationOptions}
+              value={field.value}
+            />
           </FieldSection>
         )}
       />
@@ -307,7 +321,12 @@ export function PreferencesScreen() {
         name="defaultLocationMode"
         render={({ field }) => (
           <FieldSection title="Distance / location" description="The usual starting point for how far the date can roam.">
-            <SingleSelect onChange={field.onChange} options={locationOptions} value={field.value} />
+            <SingleSelect
+              accessibilityGroup="Distance or location"
+              onChange={field.onChange}
+              options={locationOptions}
+              value={field.value}
+            />
           </FieldSection>
         )}
       />
@@ -317,7 +336,12 @@ export function PreferencesScreen() {
         name="defaultEnergy"
         render={({ field }) => (
           <FieldSection title="Default energy" description="Set the pace you are most likely to have after a normal day.">
-            <SingleSelect onChange={field.onChange} options={energyOptions} value={field.value} />
+            <SingleSelect
+              accessibilityGroup="Default energy"
+              onChange={field.onChange}
+              options={energyOptions}
+              value={field.value}
+            />
           </FieldSection>
         )}
       />
@@ -331,7 +355,12 @@ export function PreferencesScreen() {
             title="Preferred vibes"
             description="Pick a handful that feel like you. Six or fewer keeps the deck sharp."
           >
-            <MultiSelect onChange={field.onChange} options={preferenceVibeOptions} value={field.value} />
+            <MultiSelect
+              accessibilityGroup="Preferred vibes"
+              onChange={field.onChange}
+              options={preferenceVibeOptions}
+              value={field.value}
+            />
           </FieldSection>
         )}
       />
@@ -345,7 +374,12 @@ export function PreferencesScreen() {
             title="Food preferences"
             description="Tell the deck how much food should usually be part of the plan."
           >
-            <MultiSelect onChange={field.onChange} options={foodOptions} value={field.value} />
+            <MultiSelect
+              accessibilityGroup="Food preferences"
+              onChange={field.onChange}
+              options={foodOptions}
+              value={field.value}
+            />
           </FieldSection>
         )}
       />
@@ -355,7 +389,12 @@ export function PreferencesScreen() {
         name="dietaryPreferences"
         render={({ field }) => (
           <FieldSection title="Dietary preferences" description="Safety stays strict when the generator filters dates.">
-            <MultiSelect onChange={field.onChange} options={dietaryPreferenceOptions} value={field.value} />
+            <MultiSelect
+              accessibilityGroup="Dietary preferences"
+              onChange={field.onChange}
+              options={dietaryPreferenceOptions}
+              value={field.value}
+            />
           </FieldSection>
         )}
       />
@@ -365,7 +404,12 @@ export function PreferencesScreen() {
         name="rainyIndoorPreference"
         render={({ field }) => (
           <FieldSection title="Rainy / indoor preference" description="Choose how the deck should behave when the weather is unhelpful.">
-            <SingleSelect onChange={field.onChange} options={weatherOptions} value={field.value} />
+            <SingleSelect
+              accessibilityGroup="Rainy or indoor preference"
+              onChange={field.onChange}
+              options={weatherOptions}
+              value={field.value}
+            />
           </FieldSection>
         )}
       />

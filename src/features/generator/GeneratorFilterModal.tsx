@@ -44,16 +44,19 @@ function FilterSection({ children, title }: { children: ReactNode; title: string
 }
 
 function OptionChips<T extends string | number>({
+  accessibilityGroup,
   onSelect,
   options,
   value,
 }: {
+  accessibilityGroup: string;
   onSelect: (value: T) => void;
   options: Array<FilterOption<T>>;
   value?: T;
 }) {
   return options.map((option) => (
     <Chip
+      accessibilityLabel={`${accessibilityGroup}: ${option.label}`}
       key={String(option.value)}
       label={option.label}
       onPress={() => onSelect(option.value)}
@@ -93,6 +96,7 @@ export function GeneratorFilterModal({
           <ScrollView contentContainerStyle={styles.content} contentInsetAdjustmentBehavior="automatic">
             <FilterSection title="Budget">
               <OptionChips
+                accessibilityGroup="Budget"
                 onSelect={(maxBudget) => onChange({ ...filters, maxBudget: toggleValue(filters.maxBudget, maxBudget) })}
                 options={budgetOptions}
                 value={filters.maxBudget}
@@ -101,6 +105,7 @@ export function GeneratorFilterModal({
 
             <FilterSection title="Duration">
               <OptionChips
+                accessibilityGroup="Duration"
                 onSelect={(maxDurationMinutes) =>
                   onChange({
                     ...filters,
@@ -114,6 +119,7 @@ export function GeneratorFilterModal({
 
             <FilterSection title="Distance / location">
               <OptionChips
+                accessibilityGroup="Distance or location"
                 onSelect={(locationMode) =>
                   onChange({ ...filters, locationMode: toggleValue(filters.locationMode, locationMode) })
                 }
@@ -124,6 +130,7 @@ export function GeneratorFilterModal({
 
             <FilterSection title="Energy">
               <OptionChips
+                accessibilityGroup="Energy"
                 onSelect={(energy) => onChange({ ...filters, energy: toggleValue(filters.energy, energy) })}
                 options={energyOptions}
                 value={filters.energy}
@@ -132,6 +139,7 @@ export function GeneratorFilterModal({
 
             <FilterSection title="Vibe">
               <OptionChips
+                accessibilityGroup="Vibe"
                 onSelect={(vibe) => onChange({ ...filters, vibe: toggleValue(filters.vibe, vibe) })}
                 options={vibeOptions}
                 value={filters.vibe}
@@ -140,6 +148,7 @@ export function GeneratorFilterModal({
 
             <FilterSection title="Food mode">
               <OptionChips
+                accessibilityGroup="Food mode"
                 onSelect={(foodMode) => onChange({ ...filters, foodMode: toggleValue(filters.foodMode, foodMode) })}
                 options={foodOptions}
                 value={filters.foodMode}
@@ -148,6 +157,7 @@ export function GeneratorFilterModal({
 
             <FilterSection title="Weather mode">
               <OptionChips
+                accessibilityGroup="Weather mode"
                 onSelect={(weatherMode) =>
                   onChange({
                     ...filters,
@@ -159,6 +169,7 @@ export function GeneratorFilterModal({
                 value={filters.weatherMode}
               />
               <Chip
+                accessibilityLabel="Weather mode: Rainy / indoor"
                 label="Rainy / indoor"
                 onPress={() =>
                   onChange({
@@ -174,6 +185,7 @@ export function GeneratorFilterModal({
 
             <FilterSection title="Talking level">
               <OptionChips
+                accessibilityGroup="Talking level"
                 onSelect={(talkingLevel) =>
                   onChange({
                     ...filters,
@@ -185,6 +197,7 @@ export function GeneratorFilterModal({
                 value={filters.talkingLevel}
               />
               <Chip
+                accessibilityLabel="Talking level: No talking"
                 label="No talking"
                 onPress={() =>
                   onChange({
