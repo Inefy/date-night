@@ -429,7 +429,6 @@ const styles = StyleSheet.create({
   optionPillSelected: {
     backgroundColor: colors.midnightPlum,
     borderColor: colors.midnightPlum,
-    borderWidth: 2,
   },
   sectionCard: {
     gap: spacing.lg,

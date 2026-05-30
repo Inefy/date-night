@@ -174,14 +174,14 @@ export default function SettingsScreen() {
 
   return (
     <Screen scroll title="Settings">
-      <Card padding="lg" style={styles.card} variant="elevated">
+      <Card padding="lg" style={[styles.card, styles.accountCard]} variant="elevated">
         <View style={styles.sectionHeader}>
           <View style={styles.copy}>
-            <Text color="accent" variant="overline">
+            <Text color="dustyLavender" variant="overline">
               Account
             </Text>
-            <Text variant="subtitle">{user ? displayName : 'Browsing as guest'}</Text>
-            <Text color="muted" variant="body">
+            <Text color="textInverse" variant="subtitle">{user ? displayName : 'Browsing as guest'}</Text>
+            <Text color="dustyLavender" variant="body">
               {email ?? 'No email connected'}
             </Text>
           </View>
@@ -190,7 +190,7 @@ export default function SettingsScreen() {
 
         {user && editingDisplayName ? (
           <View style={styles.fieldGroup}>
-            <Text color="muted" variant="caption">
+            <Text color="dustyLavender" variant="caption">
               Display name
             </Text>
             <TextInput
@@ -322,6 +322,10 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
+  accountCard: {
+    backgroundColor: colors.midnightPlum,
+    borderColor: '#3C2A48',
+  },
   actionButton: {
     flex: 1,
   },

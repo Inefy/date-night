@@ -36,7 +36,7 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           contentStyle: { backgroundColor: colors.background },
-          headerStyle: { backgroundColor: colors.background },
+          headerStyle: { backgroundColor: colors.surface },
           headerTitle: 'Date Night Deck',
           headerTitleStyle: {
             color: colors.text,

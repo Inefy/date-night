@@ -24,24 +24,26 @@ export function Card({ children, padding = 'md', style, variant = 'surface', ...
 
 const styles = StyleSheet.create({
   base: {
+    borderColor: 'transparent',
     borderRadius: radii.xs,
+    borderWidth: 1,
   },
   surface: {
     backgroundColor: colors.surface,
+    borderColor: colors.border,
   },
   elevated: {
     backgroundColor: colors.surface,
+    borderColor: '#F0E1D4',
     ...shadows.md,
   },
   outlined: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderWidth: 1,
   },
   warm: {
     backgroundColor: colors.surfaceWarm,
-    borderColor: colors.candlelight,
-    borderWidth: 1,
+    borderColor: '#F2CFA2',
   },
   none: {
     padding: spacing.none,

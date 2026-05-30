@@ -25,9 +25,9 @@ type ChipProps = {
 
 const toneStyles: Record<ChipTone, { backgroundColor: string; color: keyof typeof colors }> = {
   neutral: { backgroundColor: colors.surfaceWarm, color: 'text' },
-  accent: { backgroundColor: colors.apricot, color: 'midnightPlum' },
-  sage: { backgroundColor: colors.sage, color: 'midnightPlum' },
-  lavender: { backgroundColor: colors.dustyLavender, color: 'midnightPlum' },
+  accent: { backgroundColor: colors.accentSoft, color: 'midnightPlum' },
+  sage: { backgroundColor: colors.tealSoft, color: 'teal' },
+  lavender: { backgroundColor: colors.plumSoft, color: 'midnightPlum' },
   candlelight: { backgroundColor: colors.candlelight, color: 'text' },
 };
 
@@ -76,14 +76,15 @@ const styles = StyleSheet.create({
   base: {
     alignItems: 'center',
     alignSelf: 'flex-start',
+    borderColor: 'transparent',
+    borderWidth: 1,
     borderRadius: radii.full,
     justifyContent: 'center',
-    minHeight: 44,
-    paddingHorizontal: spacing.lg,
+    minHeight: 38,
+    paddingHorizontal: spacing.md,
   },
   selected: {
     borderColor: colors.midnightPlum,
-    borderWidth: 2,
   },
   pressed: {
     opacity: 0.76,

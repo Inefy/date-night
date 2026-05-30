@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { Button, Card, Chip, EmptyState, ErrorState, Screen, SkeletonState, Text } from '@/components/ui';
-import { spacing } from '@/constants/theme';
+import { colors, spacing } from '@/constants/theme';
 import { trackAnalyticsEvent } from '@/features/analytics/analyticsService';
 import { isSupabaseConfigured, useAuth } from '@/features/auth/AuthProvider';
 import { getOfflineMessage, useNetworkStatus } from '@/lib/networkStatus';
@@ -245,11 +245,11 @@ export function CoupleProfileScreen() {
   return (
     <Screen bottomInset={64} scroll title="Couple">
       <Card padding="lg" style={styles.heroCard} variant="elevated">
-        <Text color="accent" variant="overline">
+        <Text color="dustyLavender" variant="overline">
           Couple deck
         </Text>
-        <Text variant="display">{couple.name ?? 'Your shared deck'}</Text>
-        <Text color="muted" variant="body">
+        <Text color="textInverse" variant="display">{couple.name ?? 'Your shared deck'}</Text>
+        <Text color="dustyLavender" variant="body">
           {partnerPending
             ? 'One half is here. Invite your partner when the timing is right.'
             : 'Both partners are connected and ready to draw from the same deck.'}
@@ -319,7 +319,10 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
   heroCard: {
+    backgroundColor: colors.midnightPlum,
+    borderColor: '#3C2A48',
     gap: spacing.md,
+    overflow: 'hidden',
   },
   memberCard: {
     gap: spacing.sm,

@@ -54,8 +54,10 @@ export function Screen({
     <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
       {scroll ? (
         <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={[styles.content, styles.scrollContent, contentStyle]}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
           style={bottomInset ? { marginBottom: bottomInset } : undefined}
         >
           {content}
@@ -76,7 +78,10 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: spacing.lg,
+    maxWidth: 720,
     padding: spacing.xl,
+    width: '100%',
+    alignSelf: 'center',
   },
   scrollContent: {
     paddingBottom: 104,

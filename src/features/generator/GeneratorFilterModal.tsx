@@ -90,7 +90,7 @@ export function GeneratorFilterModal({
             </View>
           </View>
 
-          <ScrollView contentContainerStyle={styles.content}>
+          <ScrollView contentContainerStyle={styles.content} contentInsetAdjustmentBehavior="automatic">
             <FilterSection title="Budget">
               <OptionChips
                 onSelect={(maxBudget) => onChange({ ...filters, maxBudget: toggleValue(filters.maxBudget, maxBudget) })}
@@ -200,8 +200,8 @@ export function GeneratorFilterModal({
           </ScrollView>
 
           <View style={styles.actions}>
-            <Button onPress={onReset} title="Reset" variant="ghost" />
-            <Button onPress={onClose} title="Apply filters" />
+            <Button onPress={onReset} style={styles.actionButton} title="Reset" variant="ghost" />
+            <Button onPress={onClose} style={styles.actionButton} title="Apply filters" />
           </View>
         </View>
       </View>
@@ -219,7 +219,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(36, 24, 46, 0.38)',
   },
   sheet: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderWidth: 1,
     borderTopLeftRadius: radii.xl,
     borderTopRightRadius: radii.xl,
     maxHeight: '88%',
@@ -249,12 +251,15 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   actions: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     borderTopColor: colors.border,
     borderTopWidth: 1,
     flexDirection: 'row',
     gap: spacing.md,
     justifyContent: 'flex-end',
     padding: spacing.lg,
+  },
+  actionButton: {
+    flex: 1,
   },
 });

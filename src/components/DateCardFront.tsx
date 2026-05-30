@@ -28,11 +28,14 @@ export function DateCardFront({
       style={styles.card}
       variant="elevated"
     >
+      <View style={styles.accentRail} />
       <View style={styles.topRow}>
         <Chip label={category} tone="accent" />
-        <Text color="muted" variant="caption">
-          {durationLabel}
-        </Text>
+        <View style={styles.durationPill}>
+          <Text color="accent" variant="caption">
+            {durationLabel}
+          </Text>
+        </View>
       </View>
       <View style={styles.copy}>
         <Text variant="title">{title}</Text>
@@ -58,12 +61,32 @@ export function DateCardFront({
 
 const styles = StyleSheet.create({
   card: {
+    backgroundColor: colors.surface,
     gap: spacing.xl,
     overflow: 'hidden',
+  },
+  accentRail: {
+    backgroundColor: colors.accent,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    top: 0,
+    width: 5,
+  },
+  durationPill: {
+    backgroundColor: colors.surfaceCool,
+    borderColor: colors.plumSoft,
+    borderRadius: radii.full,
+    borderWidth: 1,
+    minHeight: 34,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
   },
   topRow: {
     alignItems: 'center',
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
     justifyContent: 'space-between',
   },
   copy: {
@@ -75,8 +98,10 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   metaPill: {
-    backgroundColor: colors.candlelight,
+    backgroundColor: colors.tealSoft,
+    borderColor: '#C4E1DA',
     borderRadius: radii.full,
+    borderWidth: 1,
     minHeight: 36,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,

@@ -38,7 +38,7 @@ function StepItem({ step }: { step: DateStep }) {
   return (
     <View style={styles.stepRow}>
       <View style={styles.stepNumber}>
-        <Text color="midnightPlum" variant="caption">
+        <Text color="textInverse" variant="caption">
           {String(step.sortOrder)}
         </Text>
       </View>
@@ -83,11 +83,14 @@ export function DatePlanView({
   return (
     <View style={styles.container}>
       <Card padding="lg" style={styles.revealCard} variant="elevated">
+        <View style={styles.revealAccent} />
         <View style={styles.revealHeader}>
           <Chip label="Revealed" tone="candlelight" />
-          <Text color="textInverse" variant="caption">
-            {formatDuration(plan.estimatedDurationMinutes)}
-          </Text>
+          <View style={styles.revealDuration}>
+            <Text color="textInverse" variant="caption">
+              {formatDuration(plan.estimatedDurationMinutes)}
+            </Text>
+          </View>
         </View>
         <View style={styles.revealCopy}>
           <Text color="textInverse" variant="display">
@@ -186,6 +189,7 @@ export function DatePlanView({
           <View style={styles.actions}>
             {onSave ? (
               <Button
+                fullWidth
                 loading={isSavingFavorite}
                 onPress={onSave}
                 title={isFavorite ? 'Unsave' : 'Save'}
@@ -193,13 +197,13 @@ export function DatePlanView({
               />
             ) : null}
             {onLockForPartner ? (
-              <Button onPress={onLockForPartner} title="Lock for partner" variant="outline" />
+              <Button fullWidth onPress={onLockForPartner} title="Lock for partner" variant="outline" />
             ) : null}
             {onAddToCalendar ? (
-              <Button onPress={onAddToCalendar} title="Add to calendar" variant="secondary" />
+              <Button fullWidth onPress={onAddToCalendar} title="Add to calendar" variant="secondary" />
             ) : null}
             {onRemix ? (
-              <Button loading={isRemixing} onPress={onRemix} title="Remix" variant="outline" />
+              <Button fullWidth loading={isRemixing} onPress={onRemix} title="Remix" variant="outline" />
             ) : null}
           </View>
         </Card>
@@ -217,9 +221,27 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
     overflow: 'hidden',
   },
+  revealAccent: {
+    backgroundColor: colors.terracotta,
+    height: 5,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  revealDuration: {
+    backgroundColor: 'rgba(255, 253, 251, 0.12)',
+    borderColor: 'rgba(255, 253, 251, 0.16)',
+    borderRadius: radii.full,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
   revealHeader: {
     alignItems: 'center',
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
     justifyContent: 'space-between',
   },
   revealCopy: {
@@ -238,7 +260,7 @@ const styles = StyleSheet.create({
   metadataTile: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: radii.md,
+    borderRadius: radii.sm,
     borderWidth: 1,
     flexBasis: '47%',
     flexGrow: 1,
@@ -273,7 +295,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   bulletRow: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     flexDirection: 'row',
     gap: spacing.sm,
   },
@@ -281,6 +303,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.sage,
     borderRadius: radii.full,
     height: 8,
+    marginTop: spacing.sm,
     width: 8,
   },
   actionCard: {

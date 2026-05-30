@@ -1,11 +1,12 @@
 // src/features/generator/HomeGeneratorScreen.tsx
 import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 
 import { DateCardFront } from '@/components/DateCardFront';
 import { Button, Card, Chip, EmptyState, ErrorState, LoadingState, Screen, Text } from '@/components/ui';
-import { spacing } from '@/constants/theme';
+import { colors, radii, spacing } from '@/constants/theme';
 import { dateTemplates } from '@/data/dateTemplates';
 import { trackDatePlanAnalyticsEvent } from '@/features/analytics/analyticsService';
 import { isSupabaseConfigured, useAuth } from '@/features/auth/AuthProvider';
@@ -104,6 +105,24 @@ function formatDuration(minutes: number) {
 
 function getPrimaryVibe(plan: GeneratedDatePlan) {
   return plan.vibeTags[0]?.replaceAll('_', ' ') ?? 'date';
+}
+
+function DeckPreview() {
+  return (
+    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.deckPreview}>
+      <View style={[styles.deckLayer, styles.deckLayerBack]} />
+      <View style={[styles.deckLayer, styles.deckLayerMiddle]} />
+      <View style={[styles.deckLayer, styles.deckLayerFront]}>
+        <View style={styles.deckChip} />
+        <View style={styles.deckLineWide} />
+        <View style={styles.deckLine} />
+        <View style={styles.deckMetaRow}>
+          <View style={styles.deckMetaPill} />
+          <View style={styles.deckMetaPillShort} />
+        </View>
+      </View>
+    </View>
+  );
 }
 
 export function HomeGeneratorScreen() {
@@ -257,19 +276,30 @@ export function HomeGeneratorScreen() {
   return (
     <>
       <Screen bottomInset={64} scroll>
-        <View style={styles.hero}>
-          <Text color="accent" variant="overline">
-            {getGreeting()}
-          </Text>
-          <Text variant="display">Draw tonight's date</Text>
-          <Text color="muted" variant="body">
-            {activeCoupleId
-              ? `${activeCoupleName ?? 'Your couple'} deck is ready.`
-              : 'Solo setup for now. Add a partner later from the Couple tab.'}
-          </Text>
+        <View style={styles.heroCard}>
+          <View style={styles.heroCopy}>
+            <View style={styles.heroTopRow}>
+              <Text color="dustyLavender" variant="overline">
+                {getGreeting()}
+              </Text>
+              <Chip
+                label={activeCoupleId ? 'Shared deck' : 'Local deck'}
+                tone={activeCoupleId ? 'sage' : 'candlelight'}
+              />
+            </View>
+            <Text color="textInverse" style={styles.heroTitle} variant="display">
+              Draw tonight's date
+            </Text>
+            <Text color="dustyLavender" style={styles.heroSubtitle} variant="body">
+              {activeCoupleId
+                ? `${activeCoupleName ?? 'Your couple'} deck is ready.`
+                : 'Solo setup for now. Add a partner later from the Couple tab.'}
+            </Text>
+          </View>
+          <DeckPreview />
         </View>
 
-        <Card padding="lg" style={styles.filterCard} variant="warm">
+        <Card padding="md" style={styles.filterCard} variant="surface">
           <View style={styles.filterHeader}>
             <View style={styles.filterTitle}>
               <Text variant="subtitle">Active filters</Text>
@@ -291,6 +321,7 @@ export function HomeGeneratorScreen() {
         <View style={styles.ctaGroup}>
           <Button
             fullWidth
+            leftAccessory={<Ionicons color={colors.textInverse} name="sparkles" size={18} />}
             loading={isDrawing}
             onPress={() => void drawDate(true)}
             size="lg"
@@ -299,6 +330,7 @@ export function HomeGeneratorScreen() {
           <Button
             disabled={isDrawing}
             fullWidth
+            leftAccessory={<Ionicons color={colors.midnightPlum} name="shuffle" size={18} />}
             onPress={() => void drawDate(false)}
             size="lg"
             title="Surprise Me"
@@ -363,8 +395,106 @@ export function HomeGeneratorScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: {
+  deckChip: {
+    backgroundColor: colors.accentSoft,
+    borderRadius: radii.full,
+    height: 20,
+    width: 58,
+  },
+  deckLayer: {
+    borderRadius: radii.xs,
+    position: 'absolute',
+  },
+  deckLayerBack: {
+    backgroundColor: colors.candlelight,
+    height: 118,
+    right: 8,
+    top: 18,
+    transform: [{ rotate: '8deg' }],
+    width: 86,
+  },
+  deckLayerFront: {
+    backgroundColor: colors.surface,
+    borderColor: 'rgba(255, 255, 255, 0.42)',
+    borderWidth: 1,
     gap: spacing.sm,
+    height: 124,
+    justifyContent: 'flex-end',
+    padding: spacing.md,
+    right: 22,
+    top: 0,
+    transform: [{ rotate: '-5deg' }],
+    width: 96,
+  },
+  deckLayerMiddle: {
+    backgroundColor: colors.tealSoft,
+    height: 120,
+    right: 2,
+    top: 8,
+    transform: [{ rotate: '2deg' }],
+    width: 92,
+  },
+  deckLine: {
+    backgroundColor: colors.border,
+    borderRadius: radii.full,
+    height: 8,
+    width: '66%',
+  },
+  deckLineWide: {
+    backgroundColor: colors.midnightPlum,
+    borderRadius: radii.full,
+    height: 10,
+    width: '86%',
+  },
+  deckMetaPill: {
+    backgroundColor: colors.tealSoft,
+    borderRadius: radii.full,
+    height: 14,
+    width: 34,
+  },
+  deckMetaPillShort: {
+    backgroundColor: colors.plumSoft,
+    borderRadius: radii.full,
+    height: 14,
+    width: 26,
+  },
+  deckMetaRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  deckPreview: {
+    bottom: -12,
+    height: 142,
+    opacity: 0.96,
+    position: 'absolute',
+    right: -2,
+    width: 126,
+  },
+  heroCard: {
+    backgroundColor: colors.midnightPlum,
+    borderColor: '#3C2A48',
+    borderRadius: radii.xs,
+    borderWidth: 1,
+    minHeight: 260,
+    overflow: 'hidden',
+    padding: spacing.xl,
+  },
+  heroCopy: {
+    gap: spacing.md,
+    zIndex: 1,
+  },
+  heroSubtitle: {
+    maxWidth: 232,
+  },
+  heroTitle: {
+    maxWidth: 292,
+  },
+  heroTopRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    justifyContent: 'space-between',
   },
   filterCard: {
     gap: spacing.lg,

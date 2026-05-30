@@ -28,8 +28,8 @@ type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
 };
 
 const textColors: Record<ButtonVariant, keyof typeof colors> = {
-  primary: 'midnightPlum',
-  secondary: 'text',
+  primary: 'textInverse',
+  secondary: 'midnightPlum',
   outline: 'accent',
   ghost: 'accent',
   danger: 'textInverse',
@@ -80,6 +80,8 @@ export function Button({
 const styles = StyleSheet.create({
   base: {
     alignItems: 'center',
+    borderColor: 'transparent',
+    borderWidth: 1,
     borderRadius: radii.full,
     flexDirection: 'row',
     gap: spacing.sm,
@@ -105,11 +107,11 @@ const styles = StyleSheet.create({
   },
   secondary: {
     backgroundColor: colors.candlelight,
+    borderColor: '#F0C456',
   },
   outline: {
     backgroundColor: colors.surface,
     borderColor: colors.terracotta,
-    borderWidth: 1,
   },
   ghost: {
     backgroundColor: 'transparent',
