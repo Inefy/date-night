@@ -1,6 +1,7 @@
 // src/features/feedback/dateFeedbackService.ts
 import type { RemixReason } from '@/lib/dateGenerator';
 import { requireSupabaseClient } from '@/lib/supabase';
+import { isUuid } from '@/lib/uuid';
 import type { DateFeedbackRating, GeneratedDatePlan } from '@/types/domain';
 
 type SaveDateFeedbackInput = {
@@ -12,15 +13,6 @@ type SaveDateFeedbackInput = {
   remixReasons?: RemixReason[];
   userId: string;
 };
-
-function isUuid(value: string | undefined) {
-  return Boolean(
-    value &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-        value,
-      ),
-  );
-}
 
 function sanitizeNotes(notes?: string) {
   const trimmedNotes = notes?.trim();

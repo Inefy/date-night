@@ -1,6 +1,7 @@
 // src/features/generatedDates/generatedDateService.ts
 import type { DateGenerationFilters } from '@/lib/dateGenerator';
 import { requireSupabaseClient } from '@/lib/supabase';
+import { isUuid } from '@/lib/uuid';
 import type { DateStep, GeneratedDatePlan } from '@/types/domain';
 
 export type PersistedGeneratedDate = {
@@ -215,12 +216,6 @@ function planToInsert(input: CreateGeneratedDateInput) {
     user_id: userId,
     vibe_tags: plan.vibeTags,
   };
-}
-
-function isUuid(value: string) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    value,
-  );
 }
 
 export function isPersistedGeneratedDateId(value: string) {
