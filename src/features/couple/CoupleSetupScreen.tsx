@@ -9,6 +9,7 @@ import { trackAnalyticsEvent } from '@/features/analytics/analyticsService';
 import { isSupabaseConfigured, useAuth } from '@/features/auth/AuthProvider';
 import { getOfflineMessage, useNetworkStatus } from '@/lib/networkStatus';
 import { getLocalPreferences, saveDateNightPreferences } from '@/features/preferences/preferencesStorage';
+import { getFirstRouteParam } from '@/lib/routeParams';
 
 import {
   acceptCoupleInvite,
@@ -17,10 +18,6 @@ import {
 } from './coupleService';
 import type { CoupleProfile } from './coupleTypes';
 
-function firstParam(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
 export function CoupleSetupScreen() {
   const router = useRouter();
   const { invite } = useLocalSearchParams<{ invite?: string | string[] }>();
@@ -28,14 +25,14 @@ export function CoupleSetupScreen() {
   const { isOffline } = useNetworkStatus();
   const [coupleName, setCoupleName] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [inviteCode, setInviteCode] = useState(firstParam(invite) ?? '');
+  const [inviteCode, setInviteCode] = useState(getFirstRouteParam(invite) ?? '');
   const [loadingCouple, setLoadingCouple] = useState(false);
   const [submitting, setSubmitting] = useState<'create' | 'join' | undefined>();
   const [activeCouple, setActiveCouple] = useState<CoupleProfile | undefined>();
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
   useEffect(() => {
-    const inviteValue = firstParam(invite);
+    const inviteValue = getFirstRouteParam(invite);
 
     if (inviteValue) {
       setInviteCode(inviteValue);

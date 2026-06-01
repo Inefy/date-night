@@ -18,6 +18,7 @@ import {
 import { acceptCoupleInvite } from '@/features/couple/coupleService';
 import { saveFavorite } from '@/features/favorites/favoritesService';
 import { getOfflineMessage, useNetworkStatus } from '@/lib/networkStatus';
+import { getFirstRouteParam } from '@/lib/routeParams';
 import type { GeneratedDatePlan } from '@/types/domain';
 
 import { LockedMysteryCard } from './LockedMysteryCard';
@@ -36,10 +37,6 @@ import {
 } from './mysteryService';
 
 type ScreenStatus = 'loading' | 'ready' | 'error';
-
-function getRouteValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
 
 function getDefaultDisplayName(email?: string) {
   const emailName = email?.split('@')[0]?.replace(/[._-]+/g, ' ').trim();
@@ -133,7 +130,7 @@ export function LockedMysteryCardScreen() {
   const { token } = useLocalSearchParams<{
     token?: string | string[];
   }>();
-  const rawMysteryToken = getRouteValue(token);
+  const rawMysteryToken = getFirstRouteParam(token);
   const mysteryToken = rawMysteryToken ? parseMysteryLink(rawMysteryToken)?.token ?? rawMysteryToken : undefined;
   const mysteryLink = mysteryToken ? buildMysteryLink(mysteryToken) : undefined;
   const defaultDisplayName = useMemo(() => getDefaultDisplayName(user?.email), [user?.email]);

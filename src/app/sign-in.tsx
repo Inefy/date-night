@@ -7,16 +7,7 @@ import { Button, Card, ErrorState, LoadingState, Screen, Text } from '@/componen
 import { colors, radii, spacing } from '@/constants/theme';
 import { isSupabaseConfigured, useAuth } from '@/features/auth/AuthProvider';
 import { toFriendlyAuthError } from '@/features/auth/authErrors';
-
-function getReturnTo(value: string | string[] | undefined) {
-  const route = Array.isArray(value) ? value[0] : value;
-
-  if (!route || !route.startsWith('/') || route.startsWith('//')) {
-    return '/tabs/home';
-  }
-
-  return route;
-}
+import { getSafeReturnPath } from '@/lib/routeParams';
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -25,7 +16,7 @@ function isValidEmail(email: string) {
 export default function SignInScreen() {
   const router = useRouter();
   const { returnTo } = useLocalSearchParams<{ returnTo?: string | string[] }>();
-  const nextRoute = useMemo(() => getReturnTo(returnTo), [returnTo]);
+  const nextRoute = useMemo(() => getSafeReturnPath(returnTo), [returnTo]);
   const { authError, loading, signIn, user } = useAuth();
   const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | undefined>();

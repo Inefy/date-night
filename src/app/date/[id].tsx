@@ -35,11 +35,8 @@ import {
   saveGeneratedDatePlan,
 } from '@/lib/generatedDateStore';
 import { getOfflineMessage, useNetworkStatus } from '@/lib/networkStatus';
+import { getFirstRouteParam } from '@/lib/routeParams';
 import type { GeneratedDatePlan } from '@/types/domain';
-
-function getRouteId(id: string | string[] | undefined) {
-  return Array.isArray(id) ? id[0] : id;
-}
 
 type ScreenStatus = 'loading' | 'ready' | 'not_found' | 'permission' | 'error';
 
@@ -48,7 +45,7 @@ export default function DateDetailScreen() {
   const { loading: authLoading, user } = useAuth();
   const { isOffline } = useNetworkStatus();
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
-  const planId = getRouteId(id);
+  const planId = getFirstRouteParam(id);
   const [status, setStatus] = useState<ScreenStatus>('loading');
   const [plan, setPlan] = useState<GeneratedDatePlan | undefined>();
   const [actionMessage, setActionMessage] = useState<string | undefined>();

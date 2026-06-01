@@ -15,6 +15,7 @@ import { energyLabels, vibeLabels } from '@/features/generator/generatorLabels';
 import { formatDuration } from '@/lib/formatters';
 import { getGeneratedDatePlan, saveGeneratedDatePlan } from '@/lib/generatedDateStore';
 import { getOfflineMessage, useNetworkStatus } from '@/lib/networkStatus';
+import { getFirstRouteParam } from '@/lib/routeParams';
 import type { GeneratedDatePlan, RevealStyle } from '@/types/domain';
 
 import {
@@ -23,10 +24,6 @@ import {
 } from './mysteryService';
 
 type ScreenStatus = 'loading' | 'ready' | 'missing_date' | 'no_couple' | 'error';
-
-function getRouteValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
 
 function getPrimaryVibe(plan: GeneratedDatePlan) {
   const primaryVibe = plan.vibeTags[0];
@@ -39,7 +36,7 @@ export function MysteryCreateScreen() {
   const { loading: authLoading, user } = useAuth();
   const { isOffline } = useNetworkStatus();
   const { dateId } = useLocalSearchParams<{ dateId?: string | string[] }>();
-  const routeDateId = getRouteValue(dateId);
+  const routeDateId = getFirstRouteParam(dateId);
   const [status, setStatus] = useState<ScreenStatus>('loading');
   const [coupleProfile, setCoupleProfile] = useState<CoupleProfile | undefined>();
   const [creatorMessage, setCreatorMessage] = useState('');
