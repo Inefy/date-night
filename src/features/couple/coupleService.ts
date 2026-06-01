@@ -46,6 +46,8 @@ type InviteRpcRow = {
   token: string;
 };
 
+const inviteTokenPattern = /^[A-Za-z0-9_-]{12,256}$/;
+
 function isStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
 }
@@ -106,6 +108,20 @@ function sanitizeText(value: string) {
   return normalized.length > 0 ? normalized : undefined;
 }
 
+function safeDecodeURIComponent(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return undefined;
+  }
+}
+
+function normalizeInviteToken(value: string | undefined) {
+  const normalized = value?.trim();
+
+  return normalized && inviteTokenPattern.test(normalized) ? normalized : '';
+}
+
 export function extractInviteToken(value: string) {
   const trimmedValue = value.trim();
 
@@ -118,7 +134,7 @@ export function extractInviteToken(value: string) {
     const queryToken = parsedUrl.searchParams.get('invite') ?? parsedUrl.searchParams.get('token');
 
     if (queryToken) {
-      return queryToken.trim();
+      return normalizeInviteToken(queryToken);
     }
   } catch {
     // Bare invite codes are expected here.
@@ -127,10 +143,10 @@ export function extractInviteToken(value: string) {
   const inviteMatch = trimmedValue.match(/[?&](?:invite|token)=([^&#]+)/);
 
   if (inviteMatch?.[1]) {
-    return decodeURIComponent(inviteMatch[1]).trim();
+    return normalizeInviteToken(safeDecodeURIComponent(inviteMatch[1]));
   }
 
-  return trimmedValue;
+  return normalizeInviteToken(trimmedValue);
 }
 
 export function buildCoupleInviteLink(token: string) {
