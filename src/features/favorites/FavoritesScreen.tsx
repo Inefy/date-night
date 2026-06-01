@@ -9,6 +9,7 @@ import { spacing } from '@/constants/theme';
 import { trackDatePlanAnalyticsEvent } from '@/features/analytics/analyticsService';
 import { isSupabaseConfigured, useAuth } from '@/features/auth/AuthProvider';
 import { energyLabels, vibeLabels } from '@/features/generator/generatorLabels';
+import { formatDuration } from '@/lib/formatters';
 import { getOfflineMessage, useNetworkStatus } from '@/lib/networkStatus';
 import type { GeneratedDatePlan } from '@/types/domain';
 
@@ -17,17 +18,6 @@ import {
   removeFavorite,
   type FavoriteDateItem,
 } from './favoritesService';
-
-function formatDuration(minutes: number) {
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-
-  return remainingMinutes === 0 ? `${hours} hr` : `${hours} hr ${remainingMinutes} min`;
-}
 
 function getPrimaryVibe(plan: GeneratedDatePlan) {
   const primaryVibe = plan.vibeTags[0];

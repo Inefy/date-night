@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Card, Chip, Text } from '@/components/ui';
 import { colors, radii, spacing } from '@/constants/theme';
 import { energyLabels, locationLabels, vibeLabels } from '@/features/generator/generatorLabels';
+import { formatDuration } from '@/lib/formatters';
 import type { DateStep, GeneratedDatePlan } from '@/types/domain';
 
 type DatePlanViewProps = {
@@ -18,17 +19,6 @@ type DatePlanViewProps = {
   plan: GeneratedDatePlan;
   showActions?: boolean;
 };
-
-function formatDuration(minutes: number) {
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-
-  return remainingMinutes === 0 ? `${hours} hr` : `${hours} hr ${remainingMinutes} min`;
-}
 
 function formatVibe(vibe: GeneratedDatePlan['vibeTags'][number]) {
   return vibeLabels[vibe] ?? vibe.replaceAll('_', ' ');

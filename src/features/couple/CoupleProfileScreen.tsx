@@ -8,6 +8,7 @@ import { colors, spacing } from '@/constants/theme';
 import { trackAnalyticsEvent } from '@/features/analytics/analyticsService';
 import { isSupabaseConfigured, useAuth } from '@/features/auth/AuthProvider';
 import { getOfflineMessage, useNetworkStatus } from '@/lib/networkStatus';
+import { formatDuration } from '@/lib/formatters';
 import {
   budgetLabels,
   energyLabels,
@@ -38,17 +39,6 @@ function formatDate(value: string | undefined) {
     month: 'short',
     year: 'numeric',
   }).format(new Date(value));
-}
-
-function formatDuration(minutes: number) {
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-
-  return remainingMinutes === 0 ? `${hours} hr` : `${hours} hr ${remainingMinutes} min`;
 }
 
 function MemberCard({ member }: { member: CoupleMemberSummary }) {

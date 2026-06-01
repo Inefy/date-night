@@ -170,6 +170,7 @@ export function PreferencesScreen() {
   const [loadingPreferences, setLoadingPreferences] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formErrors, setFormErrors] = useState<PreferenceValidationErrors>({});
+  const [saveError, setSaveError] = useState<string | undefined>();
   const [saveMessage, setSaveMessage] = useState<string | undefined>();
   const [saveWarning, setSaveWarning] = useState<string | undefined>();
   const { control, handleSubmit, reset } = useForm<DateNightPreferences>({
@@ -212,6 +213,7 @@ export function PreferencesScreen() {
 
   async function persistPreferences(preferences: DateNightPreferences) {
     setFormErrors({});
+    setSaveError(undefined);
     setSaveMessage(undefined);
     setSaveWarning(undefined);
 
@@ -251,6 +253,8 @@ export function PreferencesScreen() {
             : 'Saved on this device.',
       );
       router.replace('/tabs/home');
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Preferences could not be saved on this device.');
     } finally {
       setSaving(false);
     }
@@ -415,6 +419,8 @@ export function PreferencesScreen() {
       />
 
       {saveWarning ? <ErrorState message={saveWarning} title="Saved locally" /> : null}
+
+      {saveError ? <ErrorState message={saveError} title="Preferences were not saved" /> : null}
 
       {saveMessage ? (
         <Card padding="md" variant="warm">

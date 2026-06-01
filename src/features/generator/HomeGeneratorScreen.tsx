@@ -25,6 +25,7 @@ import {
   getRecentGeneratedTemplateIds,
   saveGeneratedDatePlan,
 } from '@/lib/generatedDateStore';
+import { formatDuration } from '@/lib/formatters';
 import { getOfflineMessage, useNetworkStatus } from '@/lib/networkStatus';
 import type { GeneratedDatePlan } from '@/types/domain';
 
@@ -90,17 +91,6 @@ function getActiveFilterLabels(filters: GeneratorFilterState): string[] {
     filters.noTalking ? 'No talking' : undefined,
     filters.talkingLevel ? talkingLabels[filters.talkingLevel] : undefined,
   ].filter((label): label is string => Boolean(label));
-}
-
-function formatDuration(minutes: number) {
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-
-  return remainingMinutes === 0 ? `${hours} hr` : `${hours} hr ${remainingMinutes} min`;
 }
 
 function getPrimaryVibe(plan: GeneratedDatePlan) {

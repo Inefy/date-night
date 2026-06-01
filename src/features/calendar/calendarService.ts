@@ -3,6 +3,7 @@ import * as Calendar from 'expo-calendar';
 import * as Clipboard from 'expo-clipboard';
 import { Platform } from 'react-native';
 
+import { formatOptionalDuration } from '@/lib/formatters';
 import { requireSupabaseClient } from '@/lib/supabase';
 import type { DateStep, GeneratedDatePlan } from '@/types/domain';
 
@@ -45,23 +46,8 @@ type SaveCalendarEventMetadataInput = {
   userId: string;
 };
 
-function formatDuration(minutes?: number) {
-  if (!minutes) {
-    return undefined;
-  }
-
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-
-  return remainingMinutes === 0 ? `${hours} hr` : `${hours} hr ${remainingMinutes} min`;
-}
-
 function formatStep(step: DateStep) {
-  const duration = formatDuration(step.durationMinutes);
+  const duration = formatOptionalDuration(step.durationMinutes);
   const suffix = duration ? ` (${duration})` : '';
 
   return `${step.sortOrder}. ${step.title}${suffix}\n${step.description}`;

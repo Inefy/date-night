@@ -38,15 +38,28 @@ export function useNetworkStatus() {
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     void NetInfo.fetch()
-      .then((state) => setIsOnline(isOnlineFromState(state)))
-      .catch(() => setIsOnline(true));
+      .then((state) => {
+        if (isMounted) {
+          setIsOnline(isOnlineFromState(state));
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setIsOnline(true);
+        }
+      });
 
     const unsubscribe = NetInfo.addEventListener((state) => {
       setIsOnline(isOnlineFromState(state));
     });
 
-    return unsubscribe;
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   return {

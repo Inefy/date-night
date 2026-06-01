@@ -38,15 +38,18 @@ function uniqueValidValues<T extends string>(
   });
 }
 
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
 export function normalizePreferences(input: Partial<DateNightPreferences>): DateNightPreferences {
   return {
     defaultBudget: isOneOf(budgetLevels, input.defaultBudget)
       ? input.defaultBudget
       : defaultDateNightPreferences.defaultBudget,
-    defaultDurationMinutes:
-      typeof input.defaultDurationMinutes === 'number'
-        ? input.defaultDurationMinutes
-        : defaultDateNightPreferences.defaultDurationMinutes,
+    defaultDurationMinutes: isFiniteNumber(input.defaultDurationMinutes)
+      ? input.defaultDurationMinutes
+      : defaultDateNightPreferences.defaultDurationMinutes,
     defaultEnergy: isOneOf(energyLevels, input.defaultEnergy)
       ? input.defaultEnergy
       : defaultDateNightPreferences.defaultEnergy,
@@ -78,7 +81,12 @@ export function validatePreferences(input: DateNightPreferences): PreferenceVali
   const normalized = normalizePreferences(input);
   const errors: PreferenceValidationErrors = {};
 
-  if (normalized.defaultDurationMinutes < 30 || normalized.defaultDurationMinutes > 360) {
+  if (
+    !Number.isFinite(input.defaultDurationMinutes) ||
+    !Number.isInteger(input.defaultDurationMinutes) ||
+    normalized.defaultDurationMinutes < 30 ||
+    normalized.defaultDurationMinutes > 360
+  ) {
     errors.defaultDurationMinutes = 'Choose a default duration between 30 minutes and 6 hours.';
   }
 

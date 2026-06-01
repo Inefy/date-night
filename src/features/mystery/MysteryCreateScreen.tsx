@@ -12,6 +12,7 @@ import { getActiveCoupleProfile } from '@/features/couple/coupleService';
 import type { CoupleProfile } from '@/features/couple/coupleTypes';
 import { getGeneratedDateById, isPersistedGeneratedDateId } from '@/features/generatedDates/generatedDateService';
 import { energyLabels, vibeLabels } from '@/features/generator/generatorLabels';
+import { formatDuration } from '@/lib/formatters';
 import { getGeneratedDatePlan, saveGeneratedDatePlan } from '@/lib/generatedDateStore';
 import { getOfflineMessage, useNetworkStatus } from '@/lib/networkStatus';
 import type { GeneratedDatePlan, RevealStyle } from '@/types/domain';
@@ -25,17 +26,6 @@ type ScreenStatus = 'loading' | 'ready' | 'missing_date' | 'no_couple' | 'error'
 
 function getRouteValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
-}
-
-function formatDuration(minutes: number) {
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-
-  return remainingMinutes === 0 ? `${hours} hr` : `${hours} hr ${remainingMinutes} min`;
 }
 
 function getPrimaryVibe(plan: GeneratedDatePlan) {
