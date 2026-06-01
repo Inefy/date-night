@@ -23,7 +23,7 @@ import {
   mysteryRevealStyleOptions,
 } from './mysteryService';
 
-type ScreenStatus = 'loading' | 'ready' | 'missing_date' | 'no_couple' | 'error';
+type ScreenStatus = 'auth_required' | 'loading' | 'ready' | 'missing_date' | 'no_couple' | 'error';
 
 function getPrimaryVibe(plan: GeneratedDatePlan) {
   const primaryVibe = plan.vibeTags[0];
@@ -65,6 +65,9 @@ export function MysteryCreateScreen() {
       }
 
       if (!user) {
+        if (isMounted) {
+          setStatus('auth_required');
+        }
         return;
       }
 
@@ -215,6 +218,28 @@ export function MysteryCreateScreen() {
     return (
       <Screen title="Create Mystery Card">
         <LoadingState message="Preparing the mystery card..." />
+      </Screen>
+    );
+  }
+
+  if (status === 'auth_required') {
+    return (
+      <Screen scroll title="Create Mystery Card">
+        <ErrorState
+          message="Mystery cards need an email session so the locked card can belong to your private couple deck."
+          onRetry={() =>
+            router.push({
+              pathname: '/sign-in',
+              params: {
+                returnTo: routeDateId
+                  ? `/mystery/create?dateId=${encodeURIComponent(routeDateId)}`
+                  : '/mystery/create',
+              },
+            })
+          }
+          retryLabel="Sign in"
+          title="Sign in to create mystery cards"
+        />
       </Screen>
     );
   }

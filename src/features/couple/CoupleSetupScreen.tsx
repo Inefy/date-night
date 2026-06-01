@@ -44,7 +44,10 @@ export function CoupleSetupScreen() {
 
     async function loadCouple() {
       if (!user || !isSupabaseConfigured) {
-        setActiveCouple(undefined);
+        if (isMounted) {
+          setActiveCouple(undefined);
+          setLoadingCouple(false);
+        }
         return;
       }
 

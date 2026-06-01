@@ -69,9 +69,11 @@ export default function SettingsScreen() {
     async function loadSettings() {
       if (loading || !user || !isSupabaseConfigured) {
         if (isMounted) {
+          setErrorMessage(undefined);
           setProfile(undefined);
           setCouple(undefined);
           setDisplayNameDraft(getFallbackDisplayName(user?.email));
+          setLoadingSettings(false);
         }
         return;
       }
