@@ -45,43 +45,61 @@ export function FavoritesScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [removingId, setRemovingId] = useState<string | undefined>();
 
-  const loadFavorites = useCallback(async () => {
+  const loadFavorites = useCallback(async (isActive: () => boolean = () => true) => {
+    const commit = (update: () => void) => {
+      if (isActive()) {
+        update();
+      }
+    };
+
     if (authLoading) {
       return;
     }
 
     if (!user) {
-      setActionMessage(undefined);
-      setErrorMessage(undefined);
-      setFavorites([]);
-      setIsLoading(false);
+      commit(() => {
+        setActionMessage(undefined);
+        setErrorMessage(undefined);
+        setFavorites([]);
+        setIsLoading(false);
+      });
       return;
     }
 
     if (!isSupabaseConfigured) {
-      setErrorMessage('Favorites need Supabase sync. Add the public Supabase environment variables and try again.');
-      setIsLoading(false);
+      commit(() => {
+        setActionMessage(undefined);
+        setErrorMessage('Favorites need Supabase sync. Add the public Supabase environment variables and try again.');
+        setIsLoading(false);
+      });
       return;
     }
 
     if (isOffline) {
-      setErrorMessage(getOfflineMessage('save'));
-      setIsLoading(false);
+      commit(() => {
+        setActionMessage(undefined);
+        setErrorMessage(getOfflineMessage('save'));
+        setIsLoading(false);
+      });
       return;
     }
 
-    setActionMessage(undefined);
-    setErrorMessage(undefined);
-    setIsLoading(true);
+    commit(() => {
+      setActionMessage(undefined);
+      setErrorMessage(undefined);
+      setIsLoading(true);
+    });
 
     try {
       const savedFavorites = await listFavorites({ userId: user.id });
 
-      setFavorites(savedFavorites);
+      commit(() => setFavorites(savedFavorites));
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Saved dates could not be loaded.');
+      commit(() =>
+        setErrorMessage(error instanceof Error ? error.message : 'Saved dates could not be loaded.'),
+      );
     } finally {
-      setIsLoading(false);
+      commit(() => setIsLoading(false));
     }
   }, [authLoading, isOffline, user]);
 
@@ -89,68 +107,12 @@ export function FavoritesScreen() {
     useCallback(() => {
       let isActive = true;
 
-      async function loadOnFocus() {
-        if (authLoading) {
-          return;
-        }
-
-        if (!user) {
-          if (isActive) {
-            setActionMessage(undefined);
-            setErrorMessage(undefined);
-            setFavorites([]);
-            setIsLoading(false);
-          }
-          return;
-        }
-
-        if (!isSupabaseConfigured) {
-          if (isActive) {
-            setErrorMessage(
-              'Favorites need Supabase sync. Add the public Supabase environment variables and try again.',
-            );
-            setIsLoading(false);
-          }
-          return;
-        }
-
-        if (isOffline) {
-          if (isActive) {
-            setErrorMessage(getOfflineMessage('save'));
-            setIsLoading(false);
-          }
-          return;
-        }
-
-        if (isActive) {
-          setActionMessage(undefined);
-          setErrorMessage(undefined);
-          setIsLoading(true);
-        }
-
-        try {
-          const savedFavorites = await listFavorites({ userId: user.id });
-
-          if (isActive) {
-            setFavorites(savedFavorites);
-          }
-        } catch (error) {
-          if (isActive) {
-            setErrorMessage(error instanceof Error ? error.message : 'Saved dates could not be loaded.');
-          }
-        } finally {
-          if (isActive) {
-            setIsLoading(false);
-          }
-        }
-      }
-
-      void loadOnFocus();
+      void loadFavorites(() => isActive);
 
       return () => {
         isActive = false;
       };
-    }, [authLoading, isOffline, user]),
+    }, [loadFavorites]),
   );
 
   async function handleRemove(favorite: FavoriteDateItem) {

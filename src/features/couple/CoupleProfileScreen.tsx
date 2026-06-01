@@ -1,5 +1,5 @@
 // src/features/couple/CoupleProfileScreen.tsx
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
@@ -119,8 +119,9 @@ export function CoupleProfileScreen() {
     return Boolean(couple && couple.members.length < 2);
   }, [couple]);
 
-  async function loadCouple() {
+  const loadCouple = useCallback(async () => {
     if (!user || !isSupabaseConfigured) {
+      setErrorMessage(undefined);
       setCouple(undefined);
       setLoading(false);
       return;
@@ -142,13 +143,11 @@ export function CoupleProfileScreen() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [isOffline, user]);
 
   useEffect(() => {
     void loadCouple();
-    // loadCouple intentionally depends on live auth state.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOffline, user]);
+  }, [loadCouple]);
 
   async function handleInvitePartner() {
     if (!couple) {
