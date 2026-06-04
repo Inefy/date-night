@@ -67,4 +67,6 @@ npm run typecheck
 
 - Manual MVP QA checklist: `docs/mvp-qa-checklist.md`
 - Launch copy and store positioning: `docs/launch-copy.md`
-- Run `npm test` and `npm run typecheck` before sharing an internal build.
+- Store launch checklist: `docs/store-launch-checklist.md`
+- Run `npm test`, `npm run typecheck`, `npx expo install --check`, and `npx expo-doctor` before sharing a release candidate.
+- Production Android builds are configured as Play Store app bundles. Production submissions default to the Google Play internal track in draft status until the store listing, testers, and credentials are complete.

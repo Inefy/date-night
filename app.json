@@ -12,6 +12,9 @@
       "associatedDomains": [
         "applinks:datenightdeck.app"
       ],
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "supportsTablet": true
     },
     "android": {

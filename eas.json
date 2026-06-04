@@ -24,11 +24,23 @@
       "environment": "preview"
     },
     "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
       "autoIncrement": true,
-      "environment": "production"
+      "environment": "production",
+      "ios": {
+        "resourceClass": "m-medium"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "releaseStatus": "draft",
+        "track": "internal"
+      },
+      "ios": {}
+    }
   }
 }
